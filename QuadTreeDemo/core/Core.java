@@ -4,6 +4,7 @@ import QuadTreeDemo.entities.Entity;
 import QuadTreeDemo.entities.Rectangle;
 import QuadTreeDemo.util.QuadTree;
 import processing.core.PApplet;
+import processing.core.PImage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class Core extends PApplet {
     private boolean drawingUserRect;
     private double userX;
     private double userY;
+    private Animation duckAnimation;
 
     @Override
     public void setup() {
@@ -45,7 +47,8 @@ public class Core extends PApplet {
             objects.add(r);
             quadTree.insert(objects.get(i));
         }
-
+        frameRate(24);
+        duckAnimation = new Animation("duck", 30);
         noStroke();
 
     }
@@ -174,31 +177,35 @@ public class Core extends PApplet {
 
     @Override
     public void mousePressed() {
-        println(mouseButton);
+        println("Mouse Button \t"+ mouseButton);
     }
 
     @Override
     public void keyPressed() {
-        println(keyCode);
+        println("Key Code: \t"+keyCode);
 
-        // R
-        if (keyCode == 82) {
-            objects.clear();
-            objectsNum = 0;
+        switch (keyCode) {
+            case 82: //R
+                objects.clear();
+                objectsNum = 0;
+                break;
+            case 69: //E
+                int scale = rng.nextInt(3) + 3;
+                int w = rng.nextInt((int) (WINDOW_WIDTH / (Math.pow(2, scale))));
+                int h = rng.nextInt((int) (WINDOW_HEIGHT / (Math.pow(2, scale))));
+                int x = rng.nextInt(WINDOW_WIDTH - w);
+                int y = rng.nextInt(WINDOW_HEIGHT - h);
+                Rectangle r = new Rectangle(x, y, w, h);
+                r.setColor(100);
+                objects.add(r);
+                objectsNum++;
+                break;
+            case 68: //D
+                duckAnimation.display(0+(WINDOW_WIDTH/2)-(duckAnimation.getWidth()/2), 0+(WINDOW_HEIGHT/2)-(duckAnimation.getHeight()/2));
+                break;
+            default: break;
         }
 
-        // E
-        if (keyCode == 69) {
-            int scale = rng.nextInt(3) + 3;
-            int w = rng.nextInt((int) (WINDOW_WIDTH / (Math.pow(2, scale))));
-            int h = rng.nextInt((int) (WINDOW_HEIGHT / (Math.pow(2, scale))));
-            int x = rng.nextInt(WINDOW_WIDTH - w);
-            int y = rng.nextInt(WINDOW_HEIGHT - h);
-            Rectangle r = new Rectangle(x, y, w, h);
-            r.setColor(100);
-            objects.add(r);
-            objectsNum++;
-        }
     }
 
 
@@ -214,6 +221,36 @@ public class Core extends PApplet {
     @Override
     public void settings() {
         size(WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
+
+    class Animation {
+        PImage[] images;
+        int imageCount;
+        int frame;
+
+        Animation(String imagePrefix, int count) {
+            imageCount = count;
+            images = new PImage[imageCount];
+
+            for (int i = 0; i < imageCount; i++) {
+                // Use nf() to number format 'i' into four digits
+                String filename = dataPath("")+"\\"+imagePrefix + nf(i, 4) + ".png";
+                images[i] = loadImage(filename);
+            }
+        }
+
+        void display(float xpos, float ypos) {
+            frame = (frame+1) % imageCount;
+            image(images[frame], xpos, ypos);
+        }
+
+        int getWidth() {
+            return images[0].width;
+        }
+
+        int getHeight() {
+            return images[0].height;
+        }
     }
 
 }
